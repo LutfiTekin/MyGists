@@ -5,7 +5,7 @@
     "date": "2025-09-11",
     "tags": ["kotlin", "android", "firebase"],
     "summary": "Connectivity monitor combining Android callbacks with Firebase .info/connected.",
-    "file": "NetworkManager.kt",
+    "file": "NetworkMonitor.kt",
     "lang": "kotlin"
   }
 ]
