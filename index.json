@@ -1,0 +1,11 @@
+[
+  {
+    "slug": "network-manager",
+    "title": "NetworkManager with Firebase .info/connected",
+    "date": "2025-09-11",
+    "tags": ["kotlin", "android", "firebase"],
+    "summary": "Connectivity monitor combining Android callbacks with Firebase .info/connected.",
+    "file": "NetworkManager.kt",
+    "lang": "kotlin"
+  }
+]
