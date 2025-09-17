@@ -7,5 +7,14 @@
     "summary": "Connectivity monitor combining Android callbacks with Firebase .info/connected.",
     "file": "NetworkMonitor.kt",
     "lang": "kotlin"
+  },
+  {
+    "slug": "uncommitted-files",
+    "title": "Export uncommitted files",
+    "date": "2025-09-11",
+    "tags": ["powershell", "git"],
+    "summary": "Export uncommitted files in a git repository to a specified directory.",
+    "file": "export-uncommited-files.ps1",
+    "lang": "kotlin"
   }
 ]
