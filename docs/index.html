@@ -24,6 +24,7 @@
     --border: #e5e7eb;
     --tag-bg: #eef;
     --tag-bd: #dde;
+    --accent: #3b82f6;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -34,9 +35,9 @@
       --border: #243041;
       --tag-bg: #1b2a4a;
       --tag-bd: #2b3a5a;
+      --accent: #60a5fa;
     }
   }
-  html, body { height: 100%; }
   body {
     font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Arial, sans-serif;
     max-width: 900px;
@@ -52,6 +53,20 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
   }
+  .filter-bar {
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:.75rem;
+  }
+  .filter-bar label {
+    font-size:.9rem;
+    cursor:pointer;
+    user-select:none;
+    color:var(--muted);
+  }
+  .filter-bar input {
+    margin-right:.35rem;
+  }
   .tag {
     font-size: .75rem;
     background: var(--tag-bg);
@@ -60,8 +75,8 @@
     padding: .15rem .5rem;
     margin-right: .25rem;
   }
-  .list a { color: inherit; text-decoration: none; }
-  .list-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .list a.title { color: inherit; text-decoration: none; }
+  .list-item { padding: 12px 0; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; gap:8px; }
   .muted { color: var(--muted); font-size: .9rem; }
   pre code {
     display: block;
@@ -71,14 +86,24 @@
     border-radius: 8px;
     background: var(--card);
   }
-  a { color: inherit; }
-  a:hover { text-decoration: underline; }
+  .star-btn {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+    align-self: start;
+  }
+  .star-btn.fav { color: var(--accent); border-color: var(--accent); }
+  .star { font-size: 1rem; margin-right:.35rem; }
+  article h2 { margin-bottom: .25rem; }
+  .actions { margin: .5rem 0 1rem; }
 </style>
 </head>
 <body>
 <header>
   <h1>gists</h1>
-  <nav><a href="#">All</a></nav>
 </header>
 
 <main id="app" role="main" aria-live="polite"></main>
@@ -86,7 +111,33 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
 const app = document.getElementById('app');
+const LS_KEY = 'gists:favs';
+
 let cache = { index: null, files: new Map() };
+
+function getFavs() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch { return new Set(); }
+}
+function setFavs(set) {
+  localStorage.setItem(LS_KEY, JSON.stringify([...set]));
+}
+function toggleFav(slug) {
+  const favs = getFavs();
+  favs.has(slug) ? favs.delete(slug) : favs.add(slug);
+  setFavs(favs);
+  document.querySelectorAll(`[data-star="${slug}"]`).forEach(btn => {
+    btn.classList.toggle('fav', favs.has(slug));
+    btn.setAttribute('aria-pressed', favs.has(slug));
+    btn.querySelector('.star').textContent = favs.has(slug) ? '★' : '☆';
+  });
+  // refresh toggle UI if list is rendered
+  if (document.querySelector('#onlyFavsToggle')) {
+    renderList(cache.index);
+  }
+}
 
 async function loadIndex() {
   if (cache.index) return cache.index;
@@ -97,16 +148,41 @@ async function loadIndex() {
 }
 
 function renderList(items) {
+  const favs = getFavs();
+  const showOnlyFavs = document.querySelector('#onlyFavsToggle')?.checked;
+  const filtered = showOnlyFavs ? items.filter(x => favs.has(x.slug)) : items;
+
+  const toggleHtml = favs.size > 0 ? `
+    <div class="filter-bar">
+      <label><input type="checkbox" id="onlyFavsToggle" ${showOnlyFavs ? 'checked' : ''}/>Only favorites</label>
+    </div>` : '';
+
   app.innerHTML = `
+    ${toggleHtml}
     <div class="list">
-      ${items.map(x => `
+      ${filtered.map(x => `
         <div class="list-item">
-          <a href="#/${x.slug}"><h3>${x.title}</h3></a>
-          <div class="muted">${x.date} ${x.tags?.map(t=>`<span class="tag">${t}</span>`).join('') || ''}</div>
-          ${x.summary ? `<p>${x.summary}</p>` : ''}
+          <div>
+            <a class="title" href="#/${x.slug}"><h3>${x.title}</h3></a>
+            <div class="muted">${x.date} ${x.tags?.map(t=>`<span class="tag">${t}</span>`).join('') || ''}</div>
+            ${x.summary ? `<p>${x.summary}</p>` : ''}
+          </div>
+          <button class="star-btn ${favs.has(x.slug) ? 'fav' : ''}" data-star="${x.slug}" aria-pressed="${favs.has(x.slug)}">
+            <span class="star">${favs.has(x.slug) ? '★' : '☆'}</span>Fav
+          </button>
         </div>
       `).join('')}
     </div>`;
+
+  // Hooks
+  app.querySelectorAll('.star-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      toggleFav(btn.dataset.star);
+    });
+  });
+  const toggle = document.querySelector('#onlyFavsToggle');
+  if (toggle) toggle.addEventListener('change', () => renderList(items));
 }
 
 async function renderGist(slug) {
@@ -121,14 +197,26 @@ async function renderGist(slug) {
       cache.files.set(slug, await res.text());
     }
     const code = cache.files.get(slug);
+    const favs = getFavs();
+    const isFav = favs.has(slug);
+
     app.innerHTML = `
       <article>
         <h2>${item.title}</h2>
         <div class="muted">${item.date}</div>
+        <div class="actions">
+          <button class="star-btn ${isFav ? 'fav' : ''}" data-star="${slug}" aria-pressed="${isFav}">
+            <span class="star">${isFav ? '★' : '☆'}</span>${isFav ? 'Favorited' : 'Add to favorites'}
+          </button>
+          <a href="#" style="margin-left:.5rem">Back</a>
+        </div>
         <pre><code class="language-${item.lang}">${escapeHtml(code)}</code></pre>
       </article>
     `;
     document.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+    app.querySelector('.star-btn[data-star]').addEventListener('click', e => {
+      e.preventDefault(); toggleFav(slug);
+    });
   } catch (e) {
     app.innerHTML = `<p class="muted">Not found.</p>`;
   }
@@ -141,12 +229,12 @@ function escapeHtml(str) {
 }
 
 async function router() {
-  const hash = location.hash.replace(/^#\/?/, '');
-  if (!hash) {
+  const slug = location.hash.replace(/^#\/?/, '');
+  if (!slug) {
     const idx = await loadIndex();
     renderList(idx);
   } else {
-    await renderGist(hash);
+    await renderGist(slug);
   }
 }
 window.addEventListener('hashchange', router);
