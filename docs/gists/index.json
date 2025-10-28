@@ -24,6 +24,15 @@
     "tags": ["powershell", "android"],
     "summary": "Rename android package.",
     "file": "RenamePackage.ps1",
-    "lang": "ps1"
+    "lang": "powershell"
+  },
+  {
+    "slug": "stack-eml-json",
+    "title": "Stack EML files to JSON",
+    "date": "2025-10-28",
+    "tags": ["powershell", "json", "eml"],
+    "summary": "Stack given EML files into a single JSON array.",
+    "file": "stack_eml_files_to_json.ps1",
+    "lang": "powershell"
   }
 ]
