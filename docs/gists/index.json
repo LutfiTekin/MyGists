@@ -34,5 +34,14 @@
     "summary": "Stack given EML files into a single JSON array.",
     "file": "stack_eml_files_to_json.ps1",
     "lang": "powershell"
+  },
+  {
+    "slug": "review-me",
+    "title": "Stack source files into txt file",
+    "date": "2025-12-01",
+    "tags": ["bash"],
+    "summary": "Collect all source files from a directory and stack them into a single txt file for review.",
+    "file": "reviewme.sh",
+    "lang": "bash"
   }
 ]
