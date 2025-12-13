@@ -43,5 +43,14 @@
     "summary": "Collect all source files from a directory and stack them into a single txt file for review.",
     "file": "reviewme.sh",
     "lang": "bash"
+  },
+    {
+    "slug": "token-roller",
+    "title": "Local network token server",
+    "date": "2025-12-13",
+    "tags": ["rust"],
+    "summary": "",
+    "file": "tokenroller.rs",
+    "lang": "rust"
   }
 ]
