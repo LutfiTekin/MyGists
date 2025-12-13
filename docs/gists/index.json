@@ -49,7 +49,7 @@
     "title": "Local network token server",
     "date": "2025-12-13",
     "tags": ["rust"],
-    "summary": "",
+    "summary": "Minimal security measure for my local network services",
     "file": "tokenroller.rs",
     "lang": "rust"
   }
