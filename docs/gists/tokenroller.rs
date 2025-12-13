@@ -134,7 +134,6 @@ async fn roll_token_and_port(state: &TokenState) -> (String, u16) {
 }
 
 fn restart_vidapi(_port: u16) {
-    // Same behavior as Python: just restart vidapi, it reads port.txt itself
     let _ = Command::new("sudo")
         .arg("systemctl")
         .arg("restart")
